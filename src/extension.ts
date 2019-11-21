@@ -6,6 +6,7 @@ import * as fse from 'fs-extra';
 import { spawn } from 'child_process';
 import * as moment from 'moment';
 import * as upath from 'upath';
+import {getProjectPath} from './project-path-helper';
 
 class Logger {
     static channel: vscode.OutputChannel;
@@ -90,7 +91,8 @@ class Paster {
         }
         let filePath = fileUri.fsPath;
         let folderPath = path.dirname(filePath);
-        let projectPath = vscode.workspace.rootPath;
+        // let projectPath = vscode.workspace.rootPath;
+        let projectPath = getProjectPath(editor.document);
 
         // get selection as image file name, need check
         var selection = editor.selection;
@@ -310,10 +312,10 @@ class Paster {
                 imagePath
             ]);
             powershell.on('error', function (e) {
-                if (e.code == "ENOENT") {
+                if (e.name == "ENOENT") {
                     Logger.showErrorMessage(`The powershell command is not in you PATH environment variables.Please add it and retry.`);
                 } else {
-                    Logger.showErrorMessage(e);
+                    Logger.showErrorMessage(e.message);
                 }
             });
             powershell.on('exit', function (code, signal) {
@@ -329,7 +331,7 @@ class Paster {
 
             let ascript = spawn('osascript', [scriptPath, imagePath]);
             ascript.on('error', function (e) {
-                Logger.showErrorMessage(e);
+                Logger.showErrorMessage(e.message);
             });
             ascript.on('exit', function (code, signal) {
                 // console.log('exit',code,signal);
@@ -344,7 +346,7 @@ class Paster {
 
             let ascript = spawn('sh', [scriptPath, imagePath]);
             ascript.on('error', function (e) {
-                Logger.showErrorMessage(e);
+                Logger.showErrorMessage(e.message);
             });
             ascript.on('exit', function (code, signal) {
                 // console.log('exit',code,signal);
